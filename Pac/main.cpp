@@ -349,7 +349,7 @@ int main() {
                     window.draw(enemy);
                 }
 
-        // Игрок
+        // Игрок - пакман
         if (Map[pl.y][pl.x] == 'P') {
             pacman.setTextureRect(IntRect(block * int(pl.frame), block * pl.rotate, block, block));
             pacman.setPosition(pl.x * block, pl.y * block);
