@@ -8,14 +8,14 @@ const int width = 29;               // Ширина карты
 const int block = 25;               // Размер объектов
 
 struct GameState {
-    int chicken_num = 0;
-    int total_chicken = 0;          // Общее количество кусочков курицы
-    bool life = true;
-    bool game_over = false;
-    bool win = false;
-} gameState;
+    int chicken_num = 0;        // Собрано кусочков курицы
+    int total_chicken = 0;      // Всего кусочков на уровне
+    bool life = true;           // Жив ли игрок
+    bool game_over = false;     // Закончилась ли игра (поражение)
+    bool win = false;           // Победа ли
+} gameState;  // Создаем объект gameState этой структуры
 
-String Map[hight] = {
+String Map[hight] = { // Массив строк, представляющий карту
     "WWWWWWWWWWWWWWVWWWWWWWWWWWWWW",
     "W            WVW            W",
     "W WWWWW WWWW VVV WWWW WWWWW W",
@@ -49,19 +49,19 @@ String Map[hight] = {
 
 class Player {
 public:
-    float frame = 0;
-    int x = 14, y = 14;
-    int changex = 0, changey = 0;
-    int rotate = 0, del = 0;
+    float frame = 0;     // Для анимации
+    int x = 14, y = 14;  // Текущая позиция
+    int changex = 0, changey = 0;  // Новая позиция
+    int rotate = 0, del = 0;       // Направление и задержка
 
-    void reset() {
+    void reset() { // Сброс позиции игрока 
         frame = 0;
         x = 14; y = 14;
         changex = 0; changey = 0;
         rotate = 0; del = 0;
     }
 
-    void changeP() {
+    void changeP() { // Обновление позиции игрока
         frame += 0.03;
         if (frame > 6) frame -= 6;
         del++;
@@ -76,6 +76,7 @@ public:
             del = 0;
         }
 
+        // Проверка, можно ли переместиться
         if (Map[changey][changex] == ' ' || Map[changey][changex] == 'V') {
             if (Map[changey][changex] == ' ') {
                 gameState.chicken_num++;
@@ -85,6 +86,7 @@ public:
                 }
             }
 
+            // Столкновение с врагом
             if (Map[changey][changex] == '1' || Map[changey][changex] == '2' ||
                 Map[changey][changex] == '3' || Map[changey][changex] == '4') {
                 gameState.life = false;
@@ -92,6 +94,7 @@ public:
                 return;
             }
 
+            // Обновление карты
             Map[y][x] = 'V';
             Map[changey][changex] = 'P';
             x = changex;
@@ -123,7 +126,7 @@ public:
     int changex[4] = { 0 , 0 , 0, 0 }, changey[4] = { 0, 0, 0, 0 };
     int rotate[4] = { 1, 1, 1, 1 }, del = 0;
 
-    void reset() {
+    void reset() { // Сброс позиций врагов
         x[0] = 5; x[1] = 23; x[2] = 5; x[3] = 23;
         y[0] = 4; y[1] = 4; y[2] = 24; y[3] = 24;
         for (int i = 0; i < 4; i++) {
@@ -134,7 +137,7 @@ public:
         del = 0;
     }
 
-    void changeE() {
+    void changeE() { // Обновление позиций врагов
         del++;
         if (del >= 100) {
             for (int i = 0; i < 4; i++) {
@@ -152,6 +155,7 @@ public:
             del = 0;
         }
 
+        // Проверка перемещения для каждого врага
         for (int i = 0; i < 4; i++) {
             if (Map[changey[i]][changex[i]] == ' ' || Map[changey[i]][changex[i]] == 'V' ||
                 Map[changey[i]][changex[i]] == 'P') {
@@ -187,7 +191,7 @@ public:
     }
 };
 
-void countTotalChicken() {
+void countTotalChicken() { // Подсчет всех кусочков курицы на карте
     gameState.total_chicken = 0;
     for (int i = 0; i < hight; i++) {
         for (int j = 0; j < width; j++) {
@@ -198,7 +202,7 @@ void countTotalChicken() {
     }
 }
 
-void resetGame() {
+void resetGame() { // Сброс игры в начальное состояние
     String newMap[hight] = {
         "WWWWWWWWWWWWWWVWWWWWWWWWWWWWW",
         "W            WVW            W",
@@ -243,7 +247,9 @@ void resetGame() {
 }
 
 int main() {
-    srand(time(0));
+    srand(time(0)); // Инициализация генератора случайных чисел
+
+    // Создание окна игры
     RenderWindow window(VideoMode(width * block, hight * block), "Pacman");
 
     // Загрузка текстур
@@ -259,6 +265,7 @@ int main() {
     teleport_top.loadFromFile("C:/Users/matve/source/repos/Pac/Paint/BluePortal1.png");
     teleport_bottom.loadFromFile("C:/Users/matve/source/repos/Pac/Paint/BluePortal2.png");
 
+    // Создание спрайтов (объектов для отрисовки)
     Sprite wall(w), pacman(pac), chicken(c), enemy(e), win(win_t), lose(lose_t);
     Sprite left_portal(teleport_left), right_portal(teleport_right),
         top_portal(teleport_top), bottom_portal(teleport_bottom);
@@ -269,16 +276,19 @@ int main() {
     lose.setScale((float)(width * block) / lose.getLocalBounds().width,
         (float)(hight * block) / lose.getLocalBounds().height);
 
+    // Позиционирование телепортов
     left_portal.setPosition(0, 14 * block);
     right_portal.setPosition(28 * block, 14 * block);
     top_portal.setPosition(14 * block, 0);
     bottom_portal.setPosition(14 * block, 28 * block);
 
-    Player pl;
-    Enemy en;
-    countTotalChicken();  // Подсчет кусочков курицы при запуске
+    Player pl;  // Создание игрока
+    Enemy en;   // Создание врагов
+    countTotalChicken();  // Подсчет кусочков курицы
 
+    // Главный игровой цикл
     while (window.isOpen()) {
+        // Обработка событий (нажатия клавиш, закрытие окна)
         Event event;
         while (window.pollEvent(event)) {
             if (event.type == Event::Closed)
